@@ -1,0 +1,52 @@
+﻿@model AzureStorage.Models.Product
+<h2>Add Product</h2>
+<form class="form-inline" asp-action="@(ViewBag.IsUpdate ? "Update" : "Create")" method="post" enctype="application/x-www-form-urlencoded">
+
+    <input class="form-control mr-1" asp-for="Name" placeholder="Name" />
+    <input class="form-control mr-1" asp-for="Price" placeholder="Cost" />
+    <input class="form-control mr-1" asp-for="Stock" placeholder="Stock" />
+    <input class="form-control mr-1" asp-for="Color" placeholder="Color" />
+
+    <input type="hidden" asp-for="RowKey" />
+    <input type="hidden" asp-for="PartitionKey" />
+    <input type="hidden" asp-for="ETag" />
+    <input class=" btn btn-primary" type="submit" value="@(ViewBag.IsUpdate ? "Update" : "Save")" />
+</form>
+
+<h2>Products</h2>
+
+<form class="form-inline mb-2" asp-action="Query" method="Get">
+
+    <input class="form-control mr-2" type="number" name="price" />
+    <input type="submit" class="btn btn-dark" value="Query" />
+</form>
+<table class="table table-bordered">
+    <tr>
+        <th>RowKey</th>
+        <th>PartitionKey</th>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Stock</th>
+        <th>Color</th>
+
+        <th>Actions</th>
+    </tr>
+
+    @foreach (var item in ViewBag.products as List<AzureStorage.Models.Product>)
+    {
+        <tr>
+            <td>@item.RowKey</td>
+            <td>@item.PartitionKey</td>
+            <td>@item.Name</td>
+            <td>@item.Price</td>
+            <td>@item.Stock</td>
+            <td>@item.Color</td>
+
+            <td>
+                <a class="btn btn-success mr-1 btn-sm" asp-action="Update" asp-controller="TableStorage" asp-route-rowKey="@item.RowKey" asp-route-partitionKey="@item.PartitionKey">Update</a>
+                <a class="btn btn-danger btn-sm" asp-action="Delete" asp-controller="TableStorage" asp-route-rowKey="@item.RowKey" asp-route-partitionKey="@item.PartitionKey">Delete</a>
+            </td>
+        </tr>
+
+    }
+</table>
