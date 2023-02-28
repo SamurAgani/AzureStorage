@@ -36,7 +36,8 @@ namespace AzureStorage.Services
         public async Task<List<string>> GetLogAsync(string fileName)
         {
             List<string> logs = new List<string>();
-            var containerClient = blobServiceClient.GetBlobContainerClient(EContainerName.Logs.ToString());
+            var containerClient = blobServiceClient.GetBlobContainerClient(EContainerName.logs.ToString());
+            await containerClient.CreateIfNotExistsAsync();
             var appendBlobClient = containerClient.GetAppendBlobClient(fileName);
             await appendBlobClient.CreateIfNotExistsAsync();
             var info = await appendBlobClient.DownloadStreamingAsync();
@@ -52,21 +53,25 @@ namespace AzureStorage.Services
 
         public List<string> GetNames(EContainerName eContainerName)
         {
-            var containerClient = blobServiceClient.GetBlobContainerClient(EContainerName.Logs.ToString());
-            List<string> names = new List<string>();
+            List<string> blobNames = new List<string>();
+            var containerClient = blobServiceClient.GetBlobContainerClient(eContainerName.ToString());
             var blobs = containerClient.GetBlobs();
-            names.AddRange(blobs.Select(x => x.Name));
-            return names;
+            blobs.ToList().ForEach(x =>
+            {
+                blobNames.Add(x.Name);
+            });
+
+            return blobNames;
         }
 
         public async Task SetLogAsync(string text, string fileName)
         {
-            var containerClient = blobServiceClient.GetBlobContainerClient(EContainerName.Logs.ToString());
+            var containerClient = blobServiceClient.GetBlobContainerClient(EContainerName.logs.ToString());
             var appendBlobClient = containerClient.GetAppendBlobClient(fileName);
             await appendBlobClient.CreateIfNotExistsAsync();
             using MemoryStream ms = new MemoryStream();
             using StreamWriter sr = new StreamWriter(ms);
-            sr.Write($"{DateTime.Now} : {text} /n");
+            sr.Write($"{DateTime.Now} : {text} \n");
             sr.Flush();
             ms.Position = 0;
             await appendBlobClient.AppendBlockAsync(ms);
