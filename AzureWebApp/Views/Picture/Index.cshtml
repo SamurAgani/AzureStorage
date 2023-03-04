@@ -3,34 +3,37 @@
 }
 @section Scripts
 {
-
-<script type="text/javascript">
-
-    var picture = new Array();
-
-
-    var UserId = "@ViewBag.UserId";
-    var City = "@ViewBag.City";
-
-    $("#AddWatermark").click(() => {
-            let pictureWatermarkQueue = {
-                "UserId": UserId, "City": City, "ConnectionId": connection.connectionId, "WatermarkText": $("#watermarkText").val(), "Pictures": pictures
-            };
-            $.post("/Pictures/AddWatermark", pictureWatermarkQueue, (data) => {
-                $("#status").text("Wait please.");
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script type="text/javascript">
+            $(document).ready(() => {
+                var connection = new signalR.HubConnectionBuilder().withUrl("/NotificationHub").build();
+                connection.start().then(() => {
+                    console.log("Hub Connection Id:" + connection.connectionId)
+                });
+                connection.on("NotifyCompleteWatermarkProcess", () => {
+                    $("#status").html(`Ended.<a  href="/pictures/showwatermark">Click</a>`);
+                })
+            var pictures = new Array();
+            var UserId = "@ViewBag.UserId";
+            var City = "@ViewBag.City";
+            $("#AddWatermark").click(() => {
+                let pictureWatermarkQueue = {
+                    "UserId": UserId, "City": City, "ConnectionId": connection.connectionId, "WatermarkText": $("#watermarkText").val(), "Pictures": pictures
+                };
+                $.post("/Pictures/AddWatermark", pictureWatermarkQueue, (data) => {
+                    $("#status").text("Wait.");
+                })
+            })
+            $("#images img").click(function () {
+                $(this).css("border", "3px solid red");
+                pictures.push($(this).attr("data-name"));
+                console.log(pictures);
             })
         })
-
-    $(document).ready(() => {
-        $("#images img").click(function () {
-            $(this).css("border", "3px solid red");
-            picture.push($(this).attr("data-name"));
-            console.log(picture);
-        })
-    })
-</script>
+    </script>
 
 }
+
 <div class="row">
     <div class="col-md-8  offset-md-2">
 
